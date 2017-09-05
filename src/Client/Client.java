@@ -11,10 +11,10 @@ public class Client {
     private InetAddress address;
     private int serverPort;
 
-    public Client(int port, int serverPort) {
+    public Client(int serverPort) {
         this.serverPort = serverPort;
         try {
-            clientSocket = new DatagramSocket(port);
+            clientSocket = new DatagramSocket();
         } catch (SocketException e) {
             e.printStackTrace();
         }
