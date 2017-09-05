@@ -41,16 +41,16 @@ public class Client {
         DatagramPacket rec = new DatagramPacket(buf, buf.length);
         sendMessage("HELLO");
         receiveData(rec); // Will wait here
-        if(getMessageWithoutNull(rec.getData()).equals("OK")) {
+        if(getMessageWithoutNull(rec).equals("OK")) {
             sendMessage("START");
             receiveData(rec); // Will wait here
         }
         else {
             clientSocket.close();
-            return getMessageWithoutNull(rec.getData());
+            return getMessageWithoutNull(rec);
         }
 
-        return getMessageWithoutNull(rec.getData());
+        return getMessageWithoutNull(rec);
     }
 
     public String game(String input) {
@@ -66,13 +66,7 @@ public class Client {
         return receive.getData();
     }
 
-    private String getMessageWithoutNull(byte[] data) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b: data) {
-            if(b == '\0')
-                return sb.toString();
-            sb.append((char) b);
-        }
-        return sb.toString();
+    private String getMessageWithoutNull(DatagramPacket packet) {
+        return new String(packet.getData(), 0, packet.getLength());
     }
 }

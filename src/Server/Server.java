@@ -45,7 +45,8 @@ public class Server {
 
 
             if(!busy)
-                if(getMessageWithoutNull(receivePacket.getData()).equals("HELLO"))
+                System.out.println(new String(receivePacket.getData(), 0, receivePacket.getLength()));
+                if(getMessageWithoutNull(receivePacket).equals("HELLO"))
                     initialize(receivePacket.getAddress(), receivePacket.getPort());
             else
                 sendMessage("BUSY", receivePacket.getAddress(), receivePacket.getPort());
@@ -80,7 +81,7 @@ public class Server {
         DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
         sendMessage("OK",clientAddress,clientPort);
         receiveData(receivePacket);
-        if(getMessageWithoutNull(receivePacket.getData()).equals("START")) {
+        if(getMessageWithoutNull(receivePacket).equals("START")) {
             sendMessage("READY 5", clientAddress, clientPort);
             servingClientAddress = clientAddress;
             servingClientPort = clientPort;
@@ -89,13 +90,7 @@ public class Server {
         }
     }
 
-    private String getMessageWithoutNull(byte[] data) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b: data) {
-            if(b == '\0')
-                return sb.toString();
-            sb.append((char) b);
-        }
-        return sb.toString();
+    private String getMessageWithoutNull(DatagramPacket packet) {
+        return new String(packet.getData(), 0, packet.getLength());
     }
 }
