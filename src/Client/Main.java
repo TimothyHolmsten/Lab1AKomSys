@@ -12,12 +12,10 @@ public class Main {
             System.out.println(initMsg);
             String message = "";
             Scanner scanner = new Scanner(System.in);
-            while(!message.equals("LOSE") || !message.equals("WIN")) {
+            while(!message.equals("LOSE") && !message.equals("WON")) {
                 message = c.game(scanner.next());
                 System.out.println(message);
             }
-            System.out.println(message);
         }
-
     }
 }

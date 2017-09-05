@@ -61,7 +61,7 @@ public class Server {
             if(!busy)
                 System.out.println(new String(receivePacket.getData(), 0, receivePacket.getLength()));
                 if(getMessageWithoutNull(receivePacket).equals("HELLO"))
-                    initialize(receivePacket.getAddress(), receivePacket.getPort());
+                    initialize(receivePacket);
             else
                 sendMessage("BUSY", receivePacket);
         }
@@ -69,7 +69,6 @@ public class Server {
 
     private void sendMessage(String msg, DatagramPacket datagramPacket) {
         byte[] msgBuf = msg.getBytes();
-        System.out.println(datagramPacket.getPort());
         DatagramPacket packet = new DatagramPacket(msgBuf, msgBuf.length, datagramPacket.getAddress(), datagramPacket.getPort());
         try {
             serverSocket.send(packet);
@@ -88,15 +87,15 @@ public class Server {
         return receive.getData();
     }
 
-    public void initialize(InetAddress clientAddress, int clientPort) {
+    public void initialize(DatagramPacket packet) {
         byte[] buffer = new byte[128];
         DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
-        sendMessage("OK", receivePacket);
+        sendMessage("OK",packet);
         receiveData(receivePacket);
         if(getMessageWithoutNull(receivePacket).equals("START")) {
-            sendMessage("READY 5", receivePacket);
-            servingClientAddress = clientAddress;
-            servingClientPort = clientPort;
+            sendMessage("READY 5", packet);
+            servingClientAddress = packet.getAddress();
+            servingClientPort = packet.getPort();
             busy = true;
             game = new Game();
         }

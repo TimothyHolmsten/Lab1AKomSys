@@ -28,7 +28,6 @@ public class Client {
 
     public void sendMessage(String msg) {
         byte[] buf = msg.getBytes();
-        System.out.println(clientSocket.getPort());
 
         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, serverPort);
         try {
@@ -63,6 +62,10 @@ public class Client {
         receiveData(messageFromServer);
         sb.append(getMessageWithoutNull(messageFromServer) + "\n");
         receiveData(messageFromServer);
+        if(getMessageWithoutNull(messageFromServer).equals("WON") || getMessageWithoutNull(messageFromServer).equals("LOSE")) {
+            clientSocket.close();
+            return getMessageWithoutNull(messageFromServer);
+        }
         sb.append(getMessageWithoutNull(messageFromServer));
         return sb.toString();
     }
