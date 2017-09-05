@@ -39,26 +39,38 @@ public class Server {
                 receivePacket.getPort() == servingClientPort) {
 
                 // SPELLOGIK
-
-
+                String[] gameMessage = getMessageWithoutNull(receivePacket).split(" ");
+                if(gameMessage[0].equals("GUESS"))
+                    game.play(gameMessage[1].toCharArray()[0]);
+                sendMessage(game.getGuessedString(), receivePacket);
+                game.setGuesses(game.getGuesses() + 1);
+                if(game.getGuesses() == 10 || game.getSecret().equals(game.getGuessedString())) {
+                    busy = false;
+                    servingClientPort = 0;
+                    servingClientAddress = null;
+                    if(game.getSecret().equals(game.getGuessedString()))
+                        sendMessage("WON", receivePacket);
+                    else
+                        sendMessage("LOSE", receivePacket);
+                    continue;
+                }
+                sendMessage(String.format("You have %d guesses left", 10 - game.getGuesses()), receivePacket);
+                continue;
             }
-
 
             if(!busy)
                 System.out.println(new String(receivePacket.getData(), 0, receivePacket.getLength()));
                 if(getMessageWithoutNull(receivePacket).equals("HELLO"))
                     initialize(receivePacket.getAddress(), receivePacket.getPort());
             else
-                sendMessage("BUSY", receivePacket.getAddress(), receivePacket.getPort());
-            //serverSocket.close();
-            break;
-
+                sendMessage("BUSY", receivePacket);
         }
     }
 
-    private void sendMessage(String msg, InetAddress clientAddress, int clientPort) {
+    private void sendMessage(String msg, DatagramPacket datagramPacket) {
         byte[] msgBuf = msg.getBytes();
-        DatagramPacket packet = new DatagramPacket(msgBuf, msgBuf.length, clientAddress, clientPort);
+        System.out.println(datagramPacket.getPort());
+        DatagramPacket packet = new DatagramPacket(msgBuf, msgBuf.length, datagramPacket.getAddress(), datagramPacket.getPort());
         try {
             serverSocket.send(packet);
         } catch (IOException e) {
@@ -79,10 +91,10 @@ public class Server {
     public void initialize(InetAddress clientAddress, int clientPort) {
         byte[] buffer = new byte[128];
         DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
-        sendMessage("OK",clientAddress,clientPort);
+        sendMessage("OK", receivePacket);
         receiveData(receivePacket);
         if(getMessageWithoutNull(receivePacket).equals("START")) {
-            sendMessage("READY 5", clientAddress, clientPort);
+            sendMessage("READY 5", receivePacket);
             servingClientAddress = clientAddress;
             servingClientPort = clientPort;
             busy = true;

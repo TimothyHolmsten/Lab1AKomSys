@@ -10,12 +10,12 @@ public class Main {
         String initMsg = c.initialize();
         if(!initMsg.equals("BUSY")) {
             System.out.println(initMsg);
-            String message = "lol";
+            String message = "";
             Scanner scanner = new Scanner(System.in);
-            /*while(!message.equals("LOSE") || !message.equals("WIN")) {
+            while(!message.equals("LOSE") || !message.equals("WIN")) {
                 message = c.game(scanner.next());
-                //sysout
-            }*/
+                System.out.println(message);
+            }
             System.out.println(message);
         }
 

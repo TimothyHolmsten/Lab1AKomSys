@@ -28,6 +28,8 @@ public class Client {
 
     public void sendMessage(String msg) {
         byte[] buf = msg.getBytes();
+        System.out.println(clientSocket.getPort());
+
         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, serverPort);
         try {
             clientSocket.send(packet);
@@ -54,7 +56,15 @@ public class Client {
     }
 
     public String game(String input) {
-        return "Hej";
+        StringBuilder sb = new StringBuilder();
+        byte[] buf = new byte[128];
+        DatagramPacket messageFromServer = new DatagramPacket(buf, buf.length);
+        sendMessage("GUESS " + input);
+        receiveData(messageFromServer);
+        sb.append(getMessageWithoutNull(messageFromServer) + "\n");
+        receiveData(messageFromServer);
+        sb.append(getMessageWithoutNull(messageFromServer));
+        return sb.toString();
     }
 
     private byte[] receiveData(DatagramPacket receive) {
