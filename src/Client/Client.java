@@ -1,14 +1,18 @@
 package Client;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.util.Scanner;
 
 public class Client {
     private DatagramSocket clientSocket;
     private InetAddress address;
     private int serverPort;
 
-    public Client(int serverPort) {
+    public Client(InetAddress address, int serverPort) {
         this.serverPort = serverPort;
         try {
             clientSocket = new DatagramSocket();
@@ -16,28 +20,26 @@ public class Client {
             e.printStackTrace();
             System.err.println("Error: Connection was not possible");
         }
-        try {
-            address = InetAddress.getLocalHost();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            System.err.println("Error: The host is unknown");
-        }
-
+        this.address = address;
     }
+
     /**
      * Initialiserar anslutningen till servern
+     *
      * @return Returnerar om anslutningen till servern lyckas eller ej
      */
     public String initialize() {
+        Scanner scanner = new Scanner(System.in);
         byte[] buf = new byte[128];
         DatagramPacket rec = new DatagramPacket(buf, buf.length);
-        sendMessage("HELLO");
+        //sendMessage("HELLO");
+        sendMessage(scanner.nextLine());
         receiveData(rec); // Will wait here
-        if(getMessageWithoutNull(rec).equals("OK")) {
-            sendMessage("START");
+        if (getMessageWithoutNull(rec).equals("OK")) {
+            //sendMessage("START");
+            sendMessage(scanner.nextLine());
             receiveData(rec); // Will wait here
-        }
-        else {
+        } else {
             clientSocket.close();
             return getMessageWithoutNull(rec);
         }
@@ -47,6 +49,7 @@ public class Client {
 
     /**
      * Klientents kommunikation till servern vid spelet.
+     *
      * @param input Input med gissning från användaren.
      * @return Returnerar svaret från servern.
      */
@@ -58,7 +61,7 @@ public class Client {
         receiveData(messageFromServer);
         sb.append(getMessageWithoutNull(messageFromServer)).append("\n");
         receiveData(messageFromServer);
-        if(getMessageWithoutNull(messageFromServer).equals("WON") || getMessageWithoutNull(messageFromServer).equals("LOSE")) {
+        if (getMessageWithoutNull(messageFromServer).equals("WON") || getMessageWithoutNull(messageFromServer).equals("LOSE")) {
             clientSocket.close();
             return getMessageWithoutNull(messageFromServer);
         }
@@ -68,8 +71,8 @@ public class Client {
 
     /**
      * Används för att skicka ett specifikt meddelanden.
-     * @param msg Meddelandet som ska skickas
      *
+     * @param msg Meddelandet som ska skickas
      */
     public void sendMessage(String msg) {
         byte[] buf = msg.getBytes();
@@ -83,8 +86,13 @@ public class Client {
         }
     }
 
+    public void closeConnection() {
+        clientSocket.close();
+    }
+
     /**
      * Tar emot ny data från servern.
+     *
      * @param receive Tar emot ett datagrampacket
      * @return Returnerar datan som finns i paketet
      */
@@ -99,6 +107,7 @@ public class Client {
 
     /**
      * Plockar ut datan från datagrampaketet
+     *
      * @param packet Ett datagrampaket
      * @return Returnerar en sträng av datan.
      */

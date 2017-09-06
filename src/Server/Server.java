@@ -15,6 +15,7 @@ public class Server {
     private InetAddress servingClientAddress;
     private int servingClientPort;
     private Game game;
+    private long lastTime;
 
     public Server(int port) {
         try {
@@ -22,33 +23,43 @@ public class Server {
         } catch (SocketException e) {
             e.printStackTrace();
         }
+        lastTime = System.currentTimeMillis();
     }
 
     public void start() {
         byte[] rec = new byte[1024];
 
-        while(true) {
+        while (true) {
             DatagramPacket receivePacket = new DatagramPacket(rec, rec.length);
             try {
                 serverSocket.receive(receivePacket);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if(busy &&
-                receivePacket.getAddress().equals(servingClientAddress) &&
-                receivePacket.getPort() == servingClientPort) {
 
+            if (!getMessageWithoutNull(receivePacket).equals("HELLO") && !busy) {
+                sendMessage("BUSY", receivePacket);
+                continue;
+            }
+
+            if (System.currentTimeMillis() - lastTime > 5000 && getMessageWithoutNull(receivePacket).equals("HELLO"))
+                busy = false;
+
+            if (busy &&
+                    receivePacket.getAddress().equals(servingClientAddress) &&
+                    receivePacket.getPort() == servingClientPort) {
+                lastTime = System.currentTimeMillis();
                 // SPELLOGIK
                 String[] gameMessage = getMessageWithoutNull(receivePacket).split(" ");
-                if(gameMessage[0].equals("GUESS"))
+                if (gameMessage[0].equals("GUESS"))
                     game.play(gameMessage[1].toCharArray()[0]);
                 sendMessage(game.getGuessedString(), receivePacket);
                 game.setGuesses(game.getGuesses() + 1);
-                if(game.getGuesses() == 10 || game.getSecret().equals(game.getGuessedString())) {
+                if (game.getGuesses() == 10 || game.getSecret().equals(game.getGuessedString())) {
                     busy = false;
                     servingClientPort = 0;
                     servingClientAddress = null;
-                    if(game.getSecret().equals(game.getGuessedString()))
+                    if (game.getSecret().equals(game.getGuessedString()))
                         sendMessage("WON", receivePacket);
                     else
                         sendMessage("LOSE", receivePacket);
@@ -58,11 +69,11 @@ public class Server {
                 continue;
             }
 
-            if(!busy)
+            if (!busy) {
                 System.out.println(new String(receivePacket.getData(), 0, receivePacket.getLength()));
-                if(getMessageWithoutNull(receivePacket).equals("HELLO"))
+                if (getMessageWithoutNull(receivePacket).equals("HELLO"))
                     initialize(receivePacket);
-            else
+            } else
                 sendMessage("BUSY", receivePacket);
         }
     }
@@ -88,16 +99,24 @@ public class Server {
     }
 
     public void initialize(DatagramPacket packet) {
+        busy = true;
         byte[] buffer = new byte[128];
         DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
-        sendMessage("OK",packet);
-        receiveData(receivePacket);
-        if(getMessageWithoutNull(receivePacket).equals("START")) {
+        sendMessage("OK", packet);
+        while (receivePacket.getAddress() != packet.getAddress() && receivePacket.getPort() != packet.getPort()) {
+            receiveData(receivePacket);
+            if (receivePacket.getAddress() != packet.getAddress() && receivePacket.getPort() != packet.getPort())
+                sendMessage("BUSY", receivePacket);
+        }
+
+        if (getMessageWithoutNull(receivePacket).equals("START")) {
             sendMessage("READY 5", packet);
             servingClientAddress = packet.getAddress();
             servingClientPort = packet.getPort();
-            busy = true;
             game = new Game();
+        } else {
+            busy = false;
+            sendMessage("BUSY", packet);
         }
     }
 

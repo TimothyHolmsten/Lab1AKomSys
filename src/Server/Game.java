@@ -31,14 +31,14 @@ public class Game {
 
     public String getGuessedString() {
         StringBuilder sb = new StringBuilder();
-        for (char c: guessedString)
+        for (char c : guessedString)
             sb.append(c);
         return sb.toString();
     }
 
     public void play(char ch) {
-        for(int i = 0; i < secret.length(); i++)
-            if(Character.toUpperCase(ch) == secret.charAt(i)) {
+        for (int i = 0; i < secret.length(); i++)
+            if (Character.toUpperCase(ch) == secret.charAt(i)) {
                 guessedString[i] = Character.toUpperCase(ch);
                 break;
             }
