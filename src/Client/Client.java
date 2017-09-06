@@ -56,7 +56,7 @@ public class Client {
         DatagramPacket messageFromServer = new DatagramPacket(buf, buf.length);
         sendMessage("GUESS " + input);
         receiveData(messageFromServer);
-        sb.append(getMessageWithoutNull(messageFromServer) + "\n");
+        sb.append(getMessageWithoutNull(messageFromServer)).append("\n");
         receiveData(messageFromServer);
         if(getMessageWithoutNull(messageFromServer).equals("WON") || getMessageWithoutNull(messageFromServer).equals("LOSE")) {
             clientSocket.close();
