@@ -1,14 +1,11 @@
 package Client;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.*;
 import java.util.Scanner;
 
 public class Client {
-    private DatagramSocket clientSocket;
+    private DatagramSocket clientSocket = null;
     private InetAddress address;
     private int serverPort;
 
@@ -86,8 +83,12 @@ public class Client {
         }
     }
 
-    public void closeConnection() {
-        clientSocket.close();
+    public void closeConnection(int statusCode) {
+        if(clientSocket != null) {
+            clientSocket.close();
+            clientSocket = null;
+            System.exit(statusCode);
+        }
     }
 
     /**
@@ -98,7 +99,10 @@ public class Client {
      */
     private byte[] receiveData(DatagramPacket receive) {
         try {
+            clientSocket.setSoTimeout(10000);
             clientSocket.receive(receive);
+        } catch (SocketTimeoutException e) {
+            closeConnection(408);
         } catch (IOException e) {
             e.printStackTrace();
         }

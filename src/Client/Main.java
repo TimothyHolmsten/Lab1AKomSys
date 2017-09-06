@@ -16,7 +16,7 @@ public class Main {
             } catch (UnknownHostException e) {
                 System.err.println("Unknown host");
             }
-            client = new Client(address, 5000);
+            client = new Client(InetAddress.getByName(args[0]), Integer.parseInt(args[1]));
             String initMsg = client.initialize();
             if (!initMsg.equals("BUSY")) {
                 System.out.println(initMsg);
@@ -31,7 +31,7 @@ public class Main {
         } catch (Exception e) {
         } finally {
             if (client != null)
-                client.closeConnection();
+                client.closeConnection(0);
         }
     }
 }

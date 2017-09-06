@@ -42,7 +42,7 @@ public class Server {
                 continue;
             }
 
-            if (System.currentTimeMillis() - lastTime > 5000 && getMessageWithoutNull(receivePacket).equals("HELLO"))
+            if (System.currentTimeMillis() - lastTime > 9000 && getMessageWithoutNull(receivePacket).equals("HELLO"))
                 busy = false;
 
             if (busy &&
