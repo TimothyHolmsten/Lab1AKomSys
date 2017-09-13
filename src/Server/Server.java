@@ -37,13 +37,13 @@ public class Server {
                 e.printStackTrace();
             }
 
+            if (System.currentTimeMillis() - lastTime > 9000 && getMessageWithoutNull(receivePacket).equals("HELLO"))
+                busy = false;
+
             if (!getMessageWithoutNull(receivePacket).equals("HELLO") && !busy) {
                 sendMessage("BUSY", receivePacket);
                 continue;
             }
-
-            if (System.currentTimeMillis() - lastTime > 9000 && getMessageWithoutNull(receivePacket).equals("HELLO"))
-                busy = false;
 
             if (busy &&
                     receivePacket.getAddress().equals(servingClientAddress) &&
@@ -52,9 +52,17 @@ public class Server {
                 // SPELLOGIK
                 String[] gameMessage = getMessageWithoutNull(receivePacket).split(" ");
                 if (gameMessage[0].equals("GUESS"))
-                    game.play(gameMessage[1].toCharArray()[0]);
+                    if (gameMessage.length > 1 && !gameMessage[1].equals("\n"))
+                        game.play(gameMessage[1].toCharArray()[0]);
+                    else {
+                        sendMessage("Weird guess, try again", receivePacket);
+                        sendMessage(String.format("You have %d guesses left", 10 - game.getGuesses()), receivePacket);
+                        continue;
+                    }
+
                 sendMessage(game.getGuessedString(), receivePacket);
                 game.setGuesses(game.getGuesses() + 1);
+                // Spelet avslutas
                 if (game.getGuesses() == 10 || game.getSecret().equals(game.getGuessedString())) {
                     busy = false;
                     servingClientPort = 0;
@@ -77,7 +85,6 @@ public class Server {
                 sendMessage("BUSY", receivePacket);
         }
     }
-
     private void sendMessage(String msg, DatagramPacket datagramPacket) {
         byte[] msgBuf = msg.getBytes();
         DatagramPacket packet = new DatagramPacket(msgBuf, msgBuf.length, datagramPacket.getAddress(), datagramPacket.getPort());
@@ -99,14 +106,23 @@ public class Server {
     }
 
     public void initialize(DatagramPacket packet) {
+        lastTime = System.currentTimeMillis();
         busy = true;
         byte[] buffer = new byte[128];
         DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
         sendMessage("OK", packet);
+
         while (receivePacket.getAddress() != packet.getAddress() && receivePacket.getPort() != packet.getPort()) {
             receiveData(receivePacket);
-            if (receivePacket.getAddress() != packet.getAddress() && receivePacket.getPort() != packet.getPort())
-                sendMessage("BUSY", receivePacket);
+            if(System.currentTimeMillis() - lastTime < 9000)
+                if (receivePacket.getAddress() != packet.getAddress() && receivePacket.getPort() != packet.getPort())
+                    sendMessage("BUSY", receivePacket);
+            else if (getMessageWithoutNull(receivePacket).equals("HELLO")) {
+                packet.setAddress(receivePacket.getAddress());
+                packet.setPort(receivePacket.getPort());
+                receivePacket = new DatagramPacket(buffer, buffer.length);
+                lastTime = System.currentTimeMillis();
+            }
         }
 
         if (getMessageWithoutNull(receivePacket).equals("START")) {
