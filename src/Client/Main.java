@@ -8,7 +8,7 @@ import java.util.Scanner;
 public class Main {
 
     public static void main(String[] args) {
-        Client.Client client = null;
+        Client client = null;
         try {
             InetAddress address = null;
             try {
@@ -16,7 +16,7 @@ public class Main {
             } catch (UnknownHostException e) {
                 System.err.println("Unknown host");
             }
-            client = new Client.Client(InetAddress.getByName(args[0]), Integer.parseInt(args[1]));
+            client = new Client(InetAddress.getByName(args[0]), Integer.parseInt(args[1]));
             String initMsg = client.initialize();
             if (!initMsg.equals("BUSY")) {
                 System.out.println(initMsg);
