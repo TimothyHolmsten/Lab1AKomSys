@@ -23,8 +23,9 @@ public class Main {
                 String message = "";
                 Scanner scanner = new Scanner(System.in);
                 while (!message.equals("LOSE") && !message.equals("WON")) {
-                    message = client.game(scanner.next());
+                    message = client.game(scanner.nextLine());
                     System.out.println(message);
+
                 }
             } else
                 System.out.println("The server is busy");
