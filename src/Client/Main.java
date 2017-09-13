@@ -18,7 +18,7 @@ public class Main {
             }
             client = new Client(InetAddress.getByName(args[0]), Integer.parseInt(args[1]));
             String initMsg = client.initialize();
-            if (!initMsg.equals("BUSY")) {
+            if (!initMsg.equals("BUSY") && !initMsg.split(" ")[0].equals("ERROR")) {
                 System.out.println(initMsg);
                 String message = "";
                 Scanner scanner = new Scanner(System.in);
@@ -27,8 +27,10 @@ public class Main {
                     System.out.println(message);
 
                 }
-            } else
-                System.out.println("The server is busy");
+            } else {
+                System.out.println(initMsg);
+                System.out.println("The server could not handle you");
+            }
         } catch (Exception e) {
         } finally {
             if (client != null)

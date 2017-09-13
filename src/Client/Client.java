@@ -36,9 +36,15 @@ public class Client {
             //sendMessage("START");
             sendMessage(scanner.nextLine());
             receiveData(rec); // Will wait here
+            if(!getMessageWithoutNull(rec).equals("READY 5")) {
+                String errorMessage = getMessageWithoutNull(rec);
+                clientSocket.close();
+                return errorMessage;
+            }
         } else {
+            String errorMessage = getMessageWithoutNull(rec);
             clientSocket.close();
-            return getMessageWithoutNull(rec);
+            return errorMessage;
         }
 
         return getMessageWithoutNull(rec);
@@ -102,6 +108,7 @@ public class Client {
             clientSocket.setSoTimeout(10000);
             clientSocket.receive(receive);
         } catch (SocketTimeoutException e) {
+            System.out.println("Client timeout");
             closeConnection(408);
         } catch (IOException e) {
             e.printStackTrace();

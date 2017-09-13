@@ -78,7 +78,7 @@ public class Server {
             }
 
             if (!busy) {
-                System.out.println(new String(receivePacket.getData(), 0, receivePacket.getLength()));
+                System.out.println(getMessageWithoutNull(receivePacket));
                 if (getMessageWithoutNull(receivePacket).equals("HELLO"))
                     initialize(receivePacket);
             } else
@@ -112,17 +112,25 @@ public class Server {
         DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
         sendMessage("OK", packet);
 
-        while (receivePacket.getAddress() != packet.getAddress() && receivePacket.getPort() != packet.getPort()) {
+        while (receivePacket.getAddress() == null || !receivePacket.getAddress().equals(packet.getAddress()) && receivePacket.getPort() != packet.getPort()) {
             receiveData(receivePacket);
+            if(receivePacket.getAddress().equals(packet.getAddress()) &&
+                    receivePacket.getPort() == packet.getPort() &&
+                    !getMessageWithoutNull(receivePacket).equals("START")
+                    ) {
+                sendMessage("ERROR Wrong command, try again", receivePacket);
+                busy = false;
+                return;
+            }
             if(System.currentTimeMillis() - lastTime < 9000)
                 if (receivePacket.getAddress() != packet.getAddress() && receivePacket.getPort() != packet.getPort())
                     sendMessage("BUSY", receivePacket);
-            else if (getMessageWithoutNull(receivePacket).equals("HELLO")) {
+            /*else if (getMessageWithoutNull(receivePacket).equals("HELLO")) {
                 packet.setAddress(receivePacket.getAddress());
                 packet.setPort(receivePacket.getPort());
                 receivePacket = new DatagramPacket(buffer, buffer.length);
                 lastTime = System.currentTimeMillis();
-            }
+            }*/
         }
 
         if (getMessageWithoutNull(receivePacket).equals("START")) {
