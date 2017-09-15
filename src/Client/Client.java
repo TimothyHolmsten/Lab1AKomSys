@@ -34,6 +34,7 @@ public class Client {
         receiveData(rec); // Will wait here
         if (getMessageWithoutNull(rec).equals("OK")) {
             //sendMessage("START");
+            System.out.println(getMessageWithoutNull(rec));
             sendMessage(scanner.nextLine());
             receiveData(rec); // Will wait here
             if(!getMessageWithoutNull(rec).equals("READY 5")) {
