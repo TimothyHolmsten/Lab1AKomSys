@@ -6,9 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
-/**
- * Created by timothy on 2017-09-05, Server.
- */
+
 public class Server {
     private DatagramSocket serverSocket;
     private boolean busy = false;
@@ -16,6 +14,7 @@ public class Server {
     private int servingClientPort;
     private Game game;
     private long lastTime;
+    private int connectedUsers = 0;
 
     public Server(int port) {
         try {
@@ -71,6 +70,7 @@ public class Server {
                         sendMessage("WON", receivePacket);
                     else
                         sendMessage("LOSE", receivePacket);
+                    connectedUsers--;
                     continue;
                 }
                 sendMessage(String.format("You have %d guesses left", 10 - game.getGuesses()), receivePacket);
@@ -111,6 +111,7 @@ public class Server {
         byte[] buffer = new byte[128];
         DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
         sendMessage("OK", packet);
+        connectedUsers++;
 
         while (receivePacket.getAddress() == null || !receivePacket.getAddress().equals(packet.getAddress()) && receivePacket.getPort() != packet.getPort()) {
             receiveData(receivePacket);
@@ -123,17 +124,18 @@ public class Server {
                 return;
             }
             if(System.currentTimeMillis() - lastTime < 9000)
-                if (receivePacket.getAddress() != packet.getAddress() && receivePacket.getPort() != packet.getPort())
+                if (receivePacket.getAddress() != packet.getAddress() && receivePacket.getPort() != packet.getPort()) {
                     sendMessage("BUSY", receivePacket);
-            /*else if (getMessageWithoutNull(receivePacket).equals("HELLO")) {
+                }
+                else if (getMessageWithoutNull(receivePacket).equals("HELLO")) {
                 packet.setAddress(receivePacket.getAddress());
                 packet.setPort(receivePacket.getPort());
                 receivePacket = new DatagramPacket(buffer, buffer.length);
                 lastTime = System.currentTimeMillis();
-            }*/
+                }
         }
 
-        if (getMessageWithoutNull(receivePacket).equals("START")) {
+        if (getMessageWithoutNull(receivePacket).equals("START") && connectedUsers < 2) {
             sendMessage("READY 5", packet);
             servingClientAddress = packet.getAddress();
             servingClientPort = packet.getPort();
