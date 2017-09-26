@@ -16,7 +16,7 @@ public class Main {
             } catch (UnknownHostException e) {
                 System.err.println("Unknown host");
             }
-            client = new Client(InetAddress.getByName(args[0]), Integer.parseInt(args[1]));
+            client = new Client(address.getByName(args[0]), Integer.parseInt(args[1]));
             String initMsg = client.initialize();
             if (!initMsg.equals("BUSY") && !initMsg.split(" ")[0].equals("ERROR")) {
                 System.out.println(initMsg);

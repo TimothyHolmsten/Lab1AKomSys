@@ -137,7 +137,6 @@ public class Server {
         }
          if (getMessageWithoutNull(receivePacket).equals("START") && receivePacket.getAddress().equals(servingClientAddress) && receivePacket.getPort() == servingClientPort) {
             sendMessage("READY 5", packet);
-
             game = new Game();
         } else {
             busy = false;

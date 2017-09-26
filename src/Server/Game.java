@@ -9,6 +9,7 @@ public class Game {
     private int guesses;
     private char[] guessedString;
 
+
     public Game() {
         secret = "ANVIL";
         guesses = 0;
@@ -17,6 +18,10 @@ public class Game {
             guessedString[i] = '*';
     }
 
+    /**
+     * Gets the game secret
+     * @return The secret word
+     */
     public String getSecret() {
         return secret;
     }
