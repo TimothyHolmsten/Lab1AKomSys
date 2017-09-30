@@ -22,10 +22,9 @@ public class Main {
                 System.out.println(initMsg);
                 String message = "";
                 Scanner scanner = new Scanner(System.in);
-                while (!message.equals("LOSE") && !message.equals("WON")) {
+                while (!message.equals("LOSE") && !message.equals("WON") && !message.equals("BUSY")) {
                     message = client.game(scanner.nextLine());
                     System.out.println(message);
-
                 }
             } else {
                 System.out.println(initMsg);

@@ -65,7 +65,9 @@ public class Client {
         receiveData(messageFromServer);
         sb.append(getMessageWithoutNull(messageFromServer)).append("\n");
         receiveData(messageFromServer);
-        if (getMessageWithoutNull(messageFromServer).equals("WON") || getMessageWithoutNull(messageFromServer).equals("LOSE")) {
+        if (getMessageWithoutNull(messageFromServer).equals("WON")
+                || getMessageWithoutNull(messageFromServer).equals("LOSE")
+                || getMessageWithoutNull(messageFromServer).equals("BUSY")) {
             clientSocket.close();
             return getMessageWithoutNull(messageFromServer);
         }
