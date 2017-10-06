@@ -146,6 +146,7 @@ public class Server {
     }
 
     public void resetState() {
+        System.out.println("STATE: 0");
         servingClientPort = 0;
         servingClientAddress = null;
         state = 0;
