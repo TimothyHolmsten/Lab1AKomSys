@@ -58,10 +58,10 @@ public class Server {
             switch (state) {
                 //state=1:waiting for start
                 case 1:
-                    lastTime = System.currentTimeMillis();
                     if (getMessageWithoutNull(receivePacket).equals("START")
                             && receivePacket.getAddress() == servingClientAddress
                             && receivePacket.getPort() == servingClientPort) {
+                        lastTime = System.currentTimeMillis();
                         int len = game.getSecret().length();
                         sendMessage("READY " + len + "", receivePacket);
                         state = 2;
@@ -76,13 +76,12 @@ public class Server {
 
                 //state=2:waiting for guess
                 case 2:
-                    lastTime = System.currentTimeMillis();
                     //om paketet är från den aktiva användaren: kör spellogik
                     //om paketet är från någon annan: svara busy
                     if (receivePacket.getAddress() == servingClientAddress
                             && receivePacket.getPort() == servingClientPort) {
                         String[] gameMessage = getMessageWithoutNull(receivePacket).split(" ");
-
+                        lastTime = System.currentTimeMillis();
                         //Om paketet innehåller en gissning: kör spellogik
                         //Annars: svara "wierd guess"
                         if (gameMessage[0].equals("GUESS")) {
