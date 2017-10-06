@@ -33,7 +33,7 @@ public class Server {
         while (true) {
             //Om vi inte timeoutat: kör logik
             //Annars reseta state och meddela ev spelare
-            System.out.println("STATE:"+state);
+            //System.out.println("STATE:"+state);
             System.out.println("waitig for packet");
             try {
                 serverSocket.receive(receivePacket);
