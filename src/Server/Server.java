@@ -2,7 +2,10 @@ package Server;
 
 
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 
 public class Server {
     private DatagramSocket serverSocket;
@@ -16,6 +19,7 @@ public class Server {
     //state=1:waiting for start
     //state=2:waiting for guess
     private int state = 0;
+    private boolean blockTimeout = false;
 
 
     public Server(int port) {
@@ -29,31 +33,20 @@ public class Server {
 
     public void start() {
         lastTime = System.currentTimeMillis();
+        blockTimeout = false;
         System.out.println("Server started at:" + lastTime);
         while (true) {
             //Om vi inte timeoutat: kör logik
             //Annars reseta state och meddela ev spelare
-            System.out.println("STATE:"+state);
+            System.out.println("STATE:" + state);
             System.out.println("waitig for packet");
             try {
                 serverSocket.receive(receivePacket);
-                if(System.currentTimeMillis() - lastTime > 10000){
-                    if(servingClientPort != 0) {
-                        byte[] msgBuf = "BUSY".getBytes();
-                        System.out.println("Timeout");
-                        DatagramPacket packet = new DatagramPacket(msgBuf, msgBuf.length, servingClientAddress, servingClientPort);
-                        try {
-                            serverSocket.send(packet);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    resetState();
-                }
-            }catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
-            lastTime = System.currentTimeMillis();
+
+
             System.out.println("packet reccieved");
             switch (state) {
                 //state=1:waiting for start
@@ -63,13 +56,15 @@ public class Server {
                             && receivePacket.getPort() == servingClientPort) {
                         int len = game.getSecret().length();
                         sendMessage("READY " + len + "", receivePacket);
+                        lastTime = System.currentTimeMillis();
                         state = 2;
                     } else {
                         sendMessage("BUSY", receivePacket);
-                        if(receivePacket.getAddress() == servingClientAddress
-                                && receivePacket.getPort() == servingClientPort){
+                        System.out.println("STATE: 1, sending busy");
+                        /*if (receivePacket.getAddress() == servingClientAddress
+                                && receivePacket.getPort() == servingClientPort) {
                             resetState();
-                        }
+                        }*/
                     }
                     break;
 
@@ -80,7 +75,7 @@ public class Server {
                     if (receivePacket.getAddress() == servingClientAddress
                             && receivePacket.getPort() == servingClientPort) {
                         String[] gameMessage = getMessageWithoutNull(receivePacket).split(" ");
-
+                        lastTime = System.currentTimeMillis();
                         //Om paketet innehåller en gissning: kör spellogik
                         //Annars: svara "wierd guess"
                         if (gameMessage[0].equals("GUESS")) {
@@ -119,27 +114,56 @@ public class Server {
                         }
 
                     } else {
-                        sendMessage("BUSY", receivePacket);
+                        if(System.currentTimeMillis() - lastTime > 10000) {
+                            System.out.println("STATE: 2, someone tried to connect");
+                            if (getMessageWithoutNull(receivePacket).equals("HELLO")) {
+                                lastTime = System.currentTimeMillis();
+                                initialize(receivePacket);
+                                state = 1;
+                                blockTimeout = true;
+                            }
+                        }
+                        else
+                            sendMessage("BUSY", receivePacket);
+                        System.out.println("STATE: 2, sending busy");
                     }
                     break;
 
                 //state=0:waiting for hello
                 default:
                     if (getMessageWithoutNull(receivePacket).equals("HELLO")) {
+                        lastTime = System.currentTimeMillis();
                         initialize(receivePacket);
                         state = 1;
                     } else {
                         sendMessage("BUSY", receivePacket);
+                        System.out.println("STATE: 0, sending busy");
                     }
                     break;
             }
-
+            if (System.currentTimeMillis() - lastTime > 10000) {
+                if (servingClientPort != 0 && !blockTimeout) {
+                    byte[] msgBuf = "BUSY".getBytes();
+                    System.out.println("Timeout");
+                    DatagramPacket packet = new DatagramPacket(msgBuf, msgBuf.length, servingClientAddress, servingClientPort);
+                    try {
+                        serverSocket.send(packet);
+                        System.out.println("Timeout: sending busy");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    resetState();
+                }
+                lastTime = System.currentTimeMillis();
+            }
         }
     }
 
     public void initialize(DatagramPacket packet) {
+        resetState();
         servingClientAddress = packet.getAddress();
         servingClientPort = packet.getPort();
+        blockTimeout = false;
         sendMessage("OK", packet);
     }
 
