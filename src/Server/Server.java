@@ -127,6 +127,7 @@ public class Server {
                 //state=0:waiting for hello
                 default:
                     if (getMessageWithoutNull(receivePacket).equals("HELLO")) {
+                        lastTime = System.currentTimeMillis();
                         initialize(receivePacket);
                         state = 1;
                     } else {
