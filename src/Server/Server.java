@@ -2,7 +2,10 @@ package Server;
 
 
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 
 public class Server {
     private DatagramSocket serverSocket;
@@ -12,6 +15,7 @@ public class Server {
     private long lastTime;
     private byte[] rec = new byte[1024];
     private DatagramPacket receivePacket = new DatagramPacket(rec, rec.length);
+    boolean timeouted = false;
     //state=0:waiting for hello
     //state=1:waiting for start
     //state=2:waiting for guess
@@ -37,8 +41,8 @@ public class Server {
             System.out.println("waitig for packet");
             try {
                 serverSocket.receive(receivePacket);
-                if(System.currentTimeMillis() - lastTime > 10000){
-                    if(servingClientPort != 0) {
+                if (System.currentTimeMillis() - lastTime > 10000) {
+                    if (servingClientPort != 0) {
                         byte[] msgBuf = "BUSY".getBytes();
                         System.out.println("Timeout");
                         DatagramPacket packet = new DatagramPacket(msgBuf, msgBuf.length, servingClientAddress, servingClientPort);
@@ -48,9 +52,10 @@ public class Server {
                             e.printStackTrace();
                         }
                     }
+                    timeouted = true;
                     resetState();
                 }
-            }catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
 
@@ -66,9 +71,10 @@ public class Server {
                         sendMessage("READY " + len + "", receivePacket);
                         state = 2;
                     } else {
-                        //sendMessage("BUSY", receivePacket);
-                        if(receivePacket.getAddress() == servingClientAddress
-                                && receivePacket.getPort() == servingClientPort){
+                        if (!timeouted)
+                            sendMessage("BUSY", receivePacket);
+                        if (receivePacket.getAddress() == servingClientAddress
+                                && receivePacket.getPort() == servingClientPort) {
                             //resetState();
                         }
                     }
