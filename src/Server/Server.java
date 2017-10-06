@@ -2,10 +2,7 @@ package Server;
 
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.*;
 
 public class Server {
     private DatagramSocket serverSocket;
@@ -15,7 +12,6 @@ public class Server {
     private long lastTime;
     private byte[] rec = new byte[1024];
     private DatagramPacket receivePacket = new DatagramPacket(rec, rec.length);
-    boolean timeouted = false;
     //state=0:waiting for hello
     //state=1:waiting for start
     //state=2:waiting for guess
@@ -37,12 +33,12 @@ public class Server {
         while (true) {
             //Om vi inte timeoutat: kör logik
             //Annars reseta state och meddela ev spelare
-            //System.out.println("STATE:"+state);
+            System.out.println("STATE:"+state);
             System.out.println("waitig for packet");
             try {
                 serverSocket.receive(receivePacket);
-                if (System.currentTimeMillis() - lastTime > 10000) {
-                    if (servingClientPort != 0) {
+                if(System.currentTimeMillis() - lastTime > 10000){
+                    if(servingClientPort != 0) {
                         byte[] msgBuf = "BUSY".getBytes();
                         System.out.println("Timeout");
                         DatagramPacket packet = new DatagramPacket(msgBuf, msgBuf.length, servingClientAddress, servingClientPort);
@@ -52,13 +48,12 @@ public class Server {
                             e.printStackTrace();
                         }
                     }
-                    timeouted = true;
                     resetState();
                 }
-            } catch (IOException e) {
+            }catch (IOException e) {
                 e.printStackTrace();
             }
-
+            lastTime = System.currentTimeMillis();
             System.out.println("packet reccieved");
             switch (state) {
                 //state=1:waiting for start
@@ -66,18 +61,14 @@ public class Server {
                     if (getMessageWithoutNull(receivePacket).equals("START")
                             && receivePacket.getAddress() == servingClientAddress
                             && receivePacket.getPort() == servingClientPort) {
-                        lastTime = System.currentTimeMillis();
                         int len = game.getSecret().length();
                         sendMessage("READY " + len + "", receivePacket);
                         state = 2;
                     } else {
-                        if (!timeouted)
-                            sendMessage("BUSY", receivePacket);
-                        else
-                            timeouted = false;
-                        if (receivePacket.getAddress() == servingClientAddress
-                                && receivePacket.getPort() == servingClientPort) {
-                            //resetState();
+                        sendMessage("BUSY", receivePacket);
+                        if(receivePacket.getAddress() == servingClientAddress
+                                && receivePacket.getPort() == servingClientPort){
+                            resetState();
                         }
                     }
                     break;
@@ -89,7 +80,7 @@ public class Server {
                     if (receivePacket.getAddress() == servingClientAddress
                             && receivePacket.getPort() == servingClientPort) {
                         String[] gameMessage = getMessageWithoutNull(receivePacket).split(" ");
-                        lastTime = System.currentTimeMillis();
+
                         //Om paketet innehåller en gissning: kör spellogik
                         //Annars: svara "wierd guess"
                         if (gameMessage[0].equals("GUESS")) {
@@ -135,7 +126,6 @@ public class Server {
                 //state=0:waiting for hello
                 default:
                     if (getMessageWithoutNull(receivePacket).equals("HELLO")) {
-                        lastTime = System.currentTimeMillis();
                         initialize(receivePacket);
                         state = 1;
                     } else {
@@ -154,7 +144,6 @@ public class Server {
     }
 
     public void resetState() {
-        System.out.println("STATE: 0");
         servingClientPort = 0;
         servingClientAddress = null;
         state = 0;
