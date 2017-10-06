@@ -108,7 +108,7 @@ public class Client {
      */
     private byte[] receiveData(DatagramPacket receive) {
         try {
-            clientSocket.setSoTimeout(10000);
+            //clientSocket.setSoTimeout(10000);
             clientSocket.receive(receive);
         } catch (SocketTimeoutException e) {
             System.out.println("Client timeout");
