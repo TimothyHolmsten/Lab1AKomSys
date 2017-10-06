@@ -69,7 +69,7 @@ public class Server {
                         sendMessage("BUSY", receivePacket);
                         if(receivePacket.getAddress() == servingClientAddress
                                 && receivePacket.getPort() == servingClientPort){
-                            resetState();
+                            //resetState();
                         }
                     }
                     break;
