@@ -66,7 +66,7 @@ public class Server {
                         sendMessage("READY " + len + "", receivePacket);
                         state = 2;
                     } else {
-                        sendMessage("BUSY", receivePacket);
+                        //sendMessage("BUSY", receivePacket);
                         if(receivePacket.getAddress() == servingClientAddress
                                 && receivePacket.getPort() == servingClientPort){
                             //resetState();
