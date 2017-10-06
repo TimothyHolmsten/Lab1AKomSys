@@ -53,11 +53,12 @@ public class Server {
             }catch (IOException e) {
                 e.printStackTrace();
             }
-            lastTime = System.currentTimeMillis();
+
             System.out.println("packet reccieved");
             switch (state) {
                 //state=1:waiting for start
                 case 1:
+                    lastTime = System.currentTimeMillis();
                     if (getMessageWithoutNull(receivePacket).equals("START")
                             && receivePacket.getAddress() == servingClientAddress
                             && receivePacket.getPort() == servingClientPort) {
@@ -75,6 +76,7 @@ public class Server {
 
                 //state=2:waiting for guess
                 case 2:
+                    lastTime = System.currentTimeMillis();
                     //om paketet är från den aktiva användaren: kör spellogik
                     //om paketet är från någon annan: svara busy
                     if (receivePacket.getAddress() == servingClientAddress
