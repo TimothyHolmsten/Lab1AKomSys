@@ -73,6 +73,8 @@ public class Server {
                     } else {
                         if (!timeouted)
                             sendMessage("BUSY", receivePacket);
+                        else
+                            timeouted = false;
                         if (receivePacket.getAddress() == servingClientAddress
                                 && receivePacket.getPort() == servingClientPort) {
                             //resetState();
